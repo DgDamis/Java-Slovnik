@@ -7,7 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -21,10 +25,12 @@ import javax.swing.table.DefaultTableModel;
  */
 public class MainWindow extends javax.swing.JFrame{
 
-    private final DefaultTableModel model;
+    private DefaultTableModel model;
+    private final DefaultTableModel modelFetch;
     private Connection spojeni;
     private String filteredString = "";
     private String lastWord = "";
+    private String searchRequest = "null";
 
     /**
      * Creates new form MainWindow
@@ -38,14 +44,16 @@ public class MainWindow extends javax.swing.JFrame{
         int col = tabulka.columnAtPoint(e.getPoint());
         String name = tabulka.getColumnName(col);
         System.out.println("Column index selected " + col + " " + name);
-    }
+        searchRequest = name;
+    }   
         });
-        
         model = (DefaultTableModel) tabulka.getModel();
+        modelFetch = new DefaultTableModel();
         if (!dbConnection()) {
             System.exit(0);
         }
         listData(getAllRecords());
+        
     }
 
     private boolean dbConnection() {
@@ -75,6 +83,7 @@ public class MainWindow extends javax.swing.JFrame{
         /* Odstranění všech řádků z tabulky */
         for (int i = tabulka.getRowCount() - 1; i >= 0; i--) {
             model.removeRow(i);
+            //modelFetch.removeRow(i);
         }
         try {
             /* Vložení řádků do tabulky a jejich naplnění daty ze získané dynamické sady */
@@ -83,14 +92,26 @@ public class MainWindow extends javax.swing.JFrame{
                 String cesky = data.getString("cs");
                 //System.out.println(cesky);
                 String anglicky = data.getString("en");
-                System.out.print(isInAlphabetOrder(cesky,anglicky));
+                System.out.println(isInAlphabetOrder(cesky,anglicky));
                 if(cesky.contains(filteredString) || anglicky.contains(filteredString)){
                  model.addRow(new Object[]{id, cesky, anglicky});
+                    //modelFetch.addRow(new Object[]{id, cesky, anglicky});
                 }
                }
+            switch(searchRequest){
+                    case "null" : System.out.println("debug");
+                                //model = modelFetch;
+                        break;
+                    case "id" : break;
+                    case "cs" : System.out.println("debug");
+                        //tabulka = new JTable(new SampleSortingTableModel(modelFetch, 0));;
+                                break;
+                }
+            /*
             for(int i = 0;i< model.getRowCount();i++){
                 System.out.println(model.getValueAt(i, 1));
             }
+            */
             /* Zapnutí nebo vypnutí tlačítek Změnit a Smazat v závislosti na existenci záznamů
  (řádků) v tabulce */
             if (tabulka.getRowCount() > 0) {
@@ -277,6 +298,16 @@ public class MainWindow extends javax.swing.JFrame{
         });
 
         filter.setToolTipText("Filtrovaný výraz");
+        filter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterActionPerformed(evt);
+            }
+        });
+        filter.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                filterKeyTyped(evt);
+            }
+        });
 
         jLabel1.setText("Filter");
 
@@ -364,6 +395,16 @@ public class MainWindow extends javax.swing.JFrame{
         }
 
     }//GEN-LAST:event_searchActionPerformed
+
+    private void filterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterActionPerformed
+        filteredString = filter.getText();
+        listData(getAllRecords());
+    }//GEN-LAST:event_filterActionPerformed
+
+    private void filterKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterKeyTyped
+       filteredString = filter.getText();
+        listData(getAllRecords());
+    }//GEN-LAST:event_filterKeyTyped
 
     /**
      * @param args the command line arguments
