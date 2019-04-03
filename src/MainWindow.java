@@ -1,7 +1,5 @@
 
 import com.mysql.jdbc.Connection;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,25 +16,27 @@ import javax.swing.table.TableRowSorter;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author maturita
  */
-public class MainWindow extends javax.swing.JFrame{
+public class MainWindow extends javax.swing.JFrame {
 
     private DefaultTableModel model;
-    private final DefaultTableModel modelFetch;
+    //private TableRowSorter sorter; 
+    //private final DefaultTableModel modelFetch;
     private Connection spojeni;
-    private String filteredString = "";
-    private String lastWord = "";
-    private String searchRequest = "null";
+    private String filteredString = ".*.*";
+    //private String lastWord = "";
+    //private String searchRequest = "null";
 
+    
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
         initComponents();
+        //
         //addMouseListener(this);
         /* Broken
         tabulka.getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
@@ -47,18 +47,34 @@ public class MainWindow extends javax.swing.JFrame{
         System.out.println("Column index selected " + col + " " + name);
         searchRequest = name;
     }   
-        
         });
-        */
+         */
+        
+        //String[] columnNames = { "id", "cs", "en"};
+        
+        //Inicializace řazení
+        tabulka.setAutoCreateRowSorter(true);
+        
+        //
         model = (DefaultTableModel) tabulka.getModel();
+       // sorter = new TableRowSorter(model);
+        
+       // tabulka = new JTable((TableModel) model);
+        //tabulka.setRowSorter(sorter);
         //modelFetch = (DefaultTableModel)
         //modelFetch = new DefaultTableModel(new Object[]{"id", "cesky", "anglicky"},30);
-        modelFetch = new DefaultTableModel();
+        //modelFetch = new DefaultTableModel();
+        
+        //DefaultTableModel model = new DefaultTableModel();
+        //sorter = new TableRowSorter<DefaultTableModel>(model);
+        //tabulka = new JTable(model);
+        
+        
         if (!dbConnection()) {
             System.exit(0);
         }
         listData(getAllRecords());
-        
+
     }
 
     private boolean dbConnection() {
@@ -85,6 +101,18 @@ public class MainWindow extends javax.swing.JFrame{
     }
 
     private void listData(ResultSet data) {
+        // Inicializace filtrování
+            System.out.println(filteredString); // Debug Regex
+            /*
+            TableRowSorter sorter = new TableRowSorter(model);
+            tabulka = new JTable((TableModel) model);
+            tabulka.setRowSorter(new TableRowSorter(model));
+            System.out.println(RowFilter.regexFilter(filteredString));
+            sorter.setRowFilter(RowFilter.regexFilter(filteredString));
+            */
+            //TableRowSorter sorter = new TableRowSorter(model);
+            //sorter.setRowFilter(RowFilter.regexFilter(filteredString));
+            
         /* Odstranění všech řádků z tabulky */
         for (int i = tabulka.getRowCount() - 1; i >= 0; i--) {
             model.removeRow(i);
@@ -99,33 +127,37 @@ public class MainWindow extends javax.swing.JFrame{
                 String anglicky = data.getString("en");
                 //System.out.println(isInAlphabetOrder(cesky,anglicky));
                 //if(cesky.contains(filteredString) || anglicky.contains(filteredString)){
-                 model.addRow(new Object[]{id, cesky, anglicky});
-                    //modelFetch.addRow(new Object[]{id, cesky, anglicky});
+                model.addRow(new Object[]{id, cesky, anglicky});
+                //modelFetch.addRow(new Object[]{id, cesky, anglicky});
                 //}
-               }
-            switch(searchRequest){
-                    case "null" : //System.out.println("debug");
-                                //model = modelFetch;
-                        break;
-                    case "id" : break;
-                    case "cs" : //System.out.println("debug");
-                        //tabulka = new JTable(new SampleSortingTableModel(modelFetch, 0));;
-                                break;
-                }
+            }
+            /*
+            switch (searchRequest) {
+                case "null": //System.out.println("debug");
+                    //model = modelFetch;
+                    break;
+                case "id":
+                    break;
+                case "cs": //System.out.println("debug");
+                    //tabulka = new JTable(new SampleSortingTableModel(modelFetch, 0));;
+                    break;
+            }
+            */
             /*
             for(int i = 0;i< model.getRowCount();i++){
                 System.out.println(model.getValueAt(i, 1));
             }
-            */
+             */
+ 
+
+            
+            
+            
+            
+            //
+            //
             /* Zapnutí nebo vypnutí tlačítek Změnit a Smazat v závislosti na existenci záznamů
- (řádků) v tabulce */
-            
-            tabulka = new JTable((TableModel)model);
-            TableRowSorter sorter = new TableRowSorter(model);
-            System.out.println(filteredString);
-            sorter.setRowFilter(RowFilter.regexFilter(filteredString));
-            tabulka.setRowSorter(new TableRowSorter(model));
-            
+            (řádků) v tabulce */
             if (tabulka.getRowCount() > 0) {
                 tabulka.setRowSelectionInterval(0, 0);
                 /* Označení prvního řádku tabulky */
@@ -198,29 +230,44 @@ public class MainWindow extends javax.swing.JFrame{
         return vysledky;
     }
 
-    private Boolean isInAlphabetOrder(String string1, String string2){
-        char[] chStr1  = string1.toCharArray();
-        char[] chStr2  = string2.toCharArray();
+    private Boolean isInAlphabetOrder(String string1, String string2) {
+        char[] chStr1 = string1.toCharArray();
+        char[] chStr2 = string2.toCharArray();
         int positionOfStr1 = 0;
-        for(char c : chStr1)
-        {
-        int temp = (int)c;
-        int temp_integer = 96; //for lower case
-        if(temp<=122 & temp>=97){
-        positionOfStr1 = temp-temp_integer;
-        }}
-        for(char c : chStr2)
-        {
+        for (char c : chStr1) {
             int temp = (int) c;
             int temp_integer = 96; //for lower case
             if (temp <= 122 & temp >= 97) {
-                if((temp - temp_integer)<positionOfStr1){
+                positionOfStr1 = temp - temp_integer;
+            }
+        }
+        for (char c : chStr2) {
+            int temp = (int) c;
+            int temp_integer = 96; //for lower case
+            if (temp <= 122 & temp >= 97) {
+                if ((temp - temp_integer) < positionOfStr1) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private void newFilter(){
+        /*
+        System.out.println("Nový filter.");
+        RowFilter rf = null;
+        try{
+            rf = RowFilter.regexFilter(filter.getText(),0);
+            System.out.print(rf);
+        }catch(java.util.regex.PatternSyntaxException e){
+            return;
         }
+        sorter.setRowFilter(rf);
+        sorter.sort();
+        */
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -242,6 +289,7 @@ public class MainWindow extends javax.swing.JFrame{
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Slovník");
 
         tabulka.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -316,8 +364,8 @@ public class MainWindow extends javax.swing.JFrame{
             }
         });
         filter.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                filterKeyTyped(evt);
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                filterKeyReleased(evt);
             }
         });
 
@@ -411,20 +459,22 @@ public class MainWindow extends javax.swing.JFrame{
     private void filterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterActionPerformed
         System.out.println("Action");
         filteredString = "";
-        filteredString += ".*";   
+        filteredString += ".*";
         filteredString += filter.getText();
-        filteredString += ".*"; 
-        listData(getAllRecords());
+        filteredString += ".*";
+        //listData(getAllRecords());
+        newFilter();
     }//GEN-LAST:event_filterActionPerformed
 
-    private void filterKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterKeyTyped
-       System.out.println("Key Typed");
+    private void filterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterKeyReleased
+        System.out.println("Key Typed");
         filteredString = "";
-        filteredString += ".*";   
+        filteredString += ".*";
         filteredString += filter.getText();
-        filteredString += ".*"; 
-        listData(getAllRecords());
-    }//GEN-LAST:event_filterKeyTyped
+        filteredString += ".*";
+        //listData(getAllRecords());
+        newFilter();
+    }//GEN-LAST:event_filterKeyReleased
 
     /**
      * @param args the command line arguments
@@ -474,5 +524,4 @@ public class MainWindow extends javax.swing.JFrame{
     private javax.swing.JButton update;
     // End of variables declaration//GEN-END:variables
 
-   
 }

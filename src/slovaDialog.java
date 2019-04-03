@@ -9,6 +9,7 @@
  * @author maturita
  */
 public class slovaDialog extends javax.swing.JDialog {
+
     private String actionButton = "Storno";
 
     /**
@@ -34,8 +35,30 @@ public class slovaDialog extends javax.swing.JDialog {
 
     public String getCesky() {
         return csText.getText();
+    }    
+    /*
+    public String getManufacturer() {
+        return enText.getText();
     }
 
+    public String getBoardName() {
+        return csText.getText();
+    }
+
+    public String getPlatforma() {
+        return csText.getText();
+    }
+
+    public String getPatice() {
+        return csText.getText();
+    }
+
+    public String getChipset() {
+        return csText.getText();
+    }
+
+    */
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -78,24 +101,20 @@ public class slovaDialog extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(42, 42, 42)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(okButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(42, 42, 42)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel1))))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(stornoButton))
-                    .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel1))
                         .addGap(53, 53, 53)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(csText, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
-                            .addComponent(enText))))
+                            .addComponent(enText)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(okButton)
+                        .addGap(27, 27, 27)
+                        .addComponent(stornoButton)))
                 .addContainerGap(69, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -112,11 +131,11 @@ public class slovaDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(enText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(stornoButton))
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addGap(30, 30, 30))
         );
 
         pack();
