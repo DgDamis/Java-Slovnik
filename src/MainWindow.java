@@ -38,6 +38,7 @@ public class MainWindow extends javax.swing.JFrame{
     public MainWindow() {
         initComponents();
         //addMouseListener(this);
+        /* Broken
         tabulka.getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
         public void mouseClicked(MouseEvent e) {
@@ -46,8 +47,12 @@ public class MainWindow extends javax.swing.JFrame{
         System.out.println("Column index selected " + col + " " + name);
         searchRequest = name;
     }   
+        
         });
+        */
         model = (DefaultTableModel) tabulka.getModel();
+        //modelFetch = (DefaultTableModel)
+        //modelFetch = new DefaultTableModel(new Object[]{"id", "cesky", "anglicky"},30);
         modelFetch = new DefaultTableModel();
         if (!dbConnection()) {
             System.exit(0);
@@ -92,18 +97,18 @@ public class MainWindow extends javax.swing.JFrame{
                 String cesky = data.getString("cs");
                 //System.out.println(cesky);
                 String anglicky = data.getString("en");
-                System.out.println(isInAlphabetOrder(cesky,anglicky));
-                if(cesky.contains(filteredString) || anglicky.contains(filteredString)){
+                //System.out.println(isInAlphabetOrder(cesky,anglicky));
+                //if(cesky.contains(filteredString) || anglicky.contains(filteredString)){
                  model.addRow(new Object[]{id, cesky, anglicky});
                     //modelFetch.addRow(new Object[]{id, cesky, anglicky});
-                }
+                //}
                }
             switch(searchRequest){
-                    case "null" : System.out.println("debug");
+                    case "null" : //System.out.println("debug");
                                 //model = modelFetch;
                         break;
                     case "id" : break;
-                    case "cs" : System.out.println("debug");
+                    case "cs" : //System.out.println("debug");
                         //tabulka = new JTable(new SampleSortingTableModel(modelFetch, 0));;
                                 break;
                 }
@@ -114,6 +119,13 @@ public class MainWindow extends javax.swing.JFrame{
             */
             /* Zapnutí nebo vypnutí tlačítek Změnit a Smazat v závislosti na existenci záznamů
  (řádků) v tabulce */
+            
+            tabulka = new JTable((TableModel)model);
+            TableRowSorter sorter = new TableRowSorter(model);
+            System.out.println(filteredString);
+            sorter.setRowFilter(RowFilter.regexFilter(filteredString));
+            tabulka.setRowSorter(new TableRowSorter(model));
+            
             if (tabulka.getRowCount() > 0) {
                 tabulka.setRowSelectionInterval(0, 0);
                 /* Označení prvního řádku tabulky */
@@ -397,12 +409,20 @@ public class MainWindow extends javax.swing.JFrame{
     }//GEN-LAST:event_searchActionPerformed
 
     private void filterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterActionPerformed
-        filteredString = filter.getText();
+        System.out.println("Action");
+        filteredString = "";
+        filteredString += ".*";   
+        filteredString += filter.getText();
+        filteredString += ".*"; 
         listData(getAllRecords());
     }//GEN-LAST:event_filterActionPerformed
 
     private void filterKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterKeyTyped
-       filteredString = filter.getText();
+       System.out.println("Key Typed");
+        filteredString = "";
+        filteredString += ".*";   
+        filteredString += filter.getText();
+        filteredString += ".*"; 
         listData(getAllRecords());
     }//GEN-LAST:event_filterKeyTyped
 
