@@ -1,11 +1,29 @@
 
 import com.mysql.jdbc.Connection;
+import java.beans.BeanInfo;
+import java.beans.DefaultPersistenceDelegate;
+import java.beans.Encoder;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.XMLEncoder;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -26,7 +44,7 @@ public class MainWindow extends javax.swing.JFrame {
     //private TableRowSorter sorter; 
     //private final DefaultTableModel modelFetch;
     private Connection spojeni;
-    private String filteredString = ".*.*";
+    private String filteredString = "";
     //private String lastWord = "";
     //private String searchRequest = "null";
 
@@ -126,10 +144,10 @@ public class MainWindow extends javax.swing.JFrame {
                 //System.out.println(cesky);
                 String anglicky = data.getString("en");
                 //System.out.println(isInAlphabetOrder(cesky,anglicky));
-                //if(cesky.contains(filteredString) || anglicky.contains(filteredString)){
+                if(cesky.contains(filteredString) || anglicky.contains(filteredString)){
                 model.addRow(new Object[]{id, cesky, anglicky});
                 //modelFetch.addRow(new Object[]{id, cesky, anglicky});
-                //}
+                }
             }
             /*
             switch (searchRequest) {
@@ -285,8 +303,9 @@ public class MainWindow extends javax.swing.JFrame {
         update = new javax.swing.JButton();
         delete = new javax.swing.JButton();
         search = new javax.swing.JButton();
-        filter = new javax.swing.JTextField();
+        filterField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        exportButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Slovník");
@@ -357,19 +376,26 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        filter.setToolTipText("Filtrovaný výraz");
-        filter.addActionListener(new java.awt.event.ActionListener() {
+        filterField.setToolTipText("Filtrovaný výraz");
+        filterField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                filterActionPerformed(evt);
+                filterFieldActionPerformed(evt);
             }
         });
-        filter.addKeyListener(new java.awt.event.KeyAdapter() {
+        filterField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                filterKeyReleased(evt);
+                filterFieldKeyReleased(evt);
             }
         });
 
         jLabel1.setText("Filter");
+
+        exportButton.setText("Exportovat");
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -381,15 +407,19 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(insert)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(update)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(delete)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(search))
-                    .addComponent(filter, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(103, 103, 103))
+                        .addComponent(search)
+                        .addGap(103, 103, 103))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(filterField, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(exportButton)
+                        .addGap(37, 37, 37))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -401,9 +431,11 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(update)
                     .addComponent(insert))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(filter)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(filterField)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(exportButton))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
@@ -456,26 +488,118 @@ public class MainWindow extends javax.swing.JFrame {
 
     }//GEN-LAST:event_searchActionPerformed
 
-    private void filterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterActionPerformed
-        System.out.println("Action");
-        filteredString = "";
-        filteredString += ".*";
-        filteredString += filter.getText();
-        filteredString += ".*";
-        //listData(getAllRecords());
-        newFilter();
-    }//GEN-LAST:event_filterActionPerformed
+    private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
+        //System.out.println("Action");
+        //filteredString = "";
+        //filteredString += ".*";
+        //filteredString += filter.getText();
+        filteredString = filterField.getText();
+        //filteredString += ".*";
+        listData(getAllRecords());
+        //newFilter();
+    }//GEN-LAST:event_filterFieldActionPerformed
 
-    private void filterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterKeyReleased
-        System.out.println("Key Typed");
+    private void filterFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterFieldKeyReleased
+        //System.out.println("Key Typed");
         filteredString = "";
-        filteredString += ".*";
-        filteredString += filter.getText();
-        filteredString += ".*";
-        //listData(getAllRecords());
-        newFilter();
-    }//GEN-LAST:event_filterKeyReleased
+        //filteredString += ".*";
+        //filteredString += filter.getText();
+        filteredString = filterField.getText();
+        //filteredString += ".*";
+        listData(getAllRecords());
+        //newFilter();
+    }//GEN-LAST:event_filterFieldKeyReleased
 
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        String content = "";
+        String contentJSON = "[";
+        
+        DefaultTableModel modelToExport = (DefaultTableModel)tabulka.getModel();
+        for (int r = 0; r < modelToExport.getRowCount(); r++) {
+            contentJSON+="{";
+            for (int c = 0; c < modelToExport.getColumnCount(); c++) {
+                System.out.print(modelToExport.getValueAt(r, c) + " ");
+                content+=modelToExport.getValueAt(r, c) + " ";
+                
+                switch(c % 3){
+                    case 0: contentJSON+="\"id\":\"";
+                        break;
+                    case 1: contentJSON+=",\"cs\":\"";
+                        break;
+                    case 2: contentJSON+=",\"en\":\"";
+                        break;
+                }
+                contentJSON+=modelToExport.getValueAt(r, c);
+                contentJSON+="\"";
+            }
+            contentJSON+="},";
+            
+            content+="\n";
+            System.out.println();
+        }
+        int length = contentJSON.length();
+        contentJSON = contentJSON.substring(0, length-1);
+        contentJSON+="]";
+        
+        /*
+        JTable tableToExport = new JTable();
+        tableToExport.setModel(model);
+        XMLEncoder e;
+        try {
+            e = new XMLEncoder(
+                    new BufferedOutputStream(
+                            new FileOutputStream("Test.xml")));
+            e.writeObject(tableToExport);
+            e.close();
+            System.out.println("Exportováno");
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
+        
+        System.out.println(content);
+        System.out.println(contentJSON);
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+        
+        try{
+           fw = new FileWriter("Data.txt");
+           bw = new BufferedWriter(fw);
+           bw.write(content);
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally{
+            try{
+                if(bw != null)
+                    bw.close();
+                if(bw != null)
+                    fw.close();
+            }catch(IOException e){
+            e.printStackTrace();
+            }
+        }
+        
+        try{
+           fw = new FileWriter("DataJSON.txt");
+           bw = new BufferedWriter(fw);
+           bw.write(contentJSON);
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally{
+            try{
+                if(bw != null)
+                    bw.close();
+                if(bw != null)
+                    fw.close();
+            }catch(IOException e){
+            e.printStackTrace();
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Data byla exportována.\nNaleznete je v souborech:\n Data.txt\n DataJSON.txt", "Exportování dat", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_exportButtonActionPerformed
+        
+    
+    
     /**
      * @param args the command line arguments
      */
@@ -513,7 +637,8 @@ public class MainWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton delete;
-    private javax.swing.JTextField filter;
+    private javax.swing.JButton exportButton;
+    private javax.swing.JTextField filterField;
     private javax.swing.JButton insert;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
